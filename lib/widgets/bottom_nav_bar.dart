@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import '../utils/app_colors.dart';
-// IMPORT ALL SCREENS HERE
-import '../screens/home_screen.dart';
-import '../screens/monitoring_screen.dart';
-import '../screens/analytics_screen.dart';
-import '../screens/settings_screen.dart';
+
+// ✅ USE ALIASES TO AVOID NAME CONFLICTS
+import '../screens/home_screen.dart' as home;
+import '../screens/monitoring_screen.dart' as monitor;
+import '../screens/analytics_screen.dart' as analytics;
+import '../screens/settings_screen.dart' as settings;
 
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -18,7 +19,7 @@ class BottomNavBar extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.05), // ✅ FIXED
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -27,34 +28,30 @@ class BottomNavBar extends StatelessWidget {
       child: NavigationBar(
         selectedIndex: currentIndex,
         onDestinationSelected: (index) {
-          // If user taps the current tab, do nothing
           if (index == currentIndex) return;
 
           Widget targetScreen;
 
-          // SELECT THE SCREEN BASED ON INDEX
           switch (index) {
             case 0:
-              targetScreen = const HomeScreen();
+              targetScreen = const home.HomeScreen();
               break;
             case 1:
-              targetScreen = const MonitoringScreen();
+              targetScreen = const monitor.MonitoringScreen();
               break;
             case 2:
-              targetScreen = const AnalyticsScreen();
+              targetScreen = const analytics.AnalyticsScreen();
               break;
             case 3:
-              targetScreen = const SettingsScreen();
+              targetScreen = const settings.SettingsScreen();
               break;
             default:
-              targetScreen = const HomeScreen();
+              targetScreen = const home.HomeScreen();
           }
 
-          // NAVIGATE DIRECTLY TO THE SCREEN
-          // pushAndRemoveUntil clears the back stack so the Back button closes the app
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (context) => targetScreen),
+            MaterialPageRoute(builder: (_) => targetScreen),
             (route) => false,
           );
         },
