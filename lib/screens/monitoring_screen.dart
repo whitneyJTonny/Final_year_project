@@ -1,414 +1,308 @@
-import 'dart:async';
-import 'package:flutter/material.dart';
-import '../utils/app_colors.dart';
+﻿import 'package:flutter/material.dart';
 import '../widgets/bottom_nav_bar.dart';
+import 'beneficiary_profile_screen.dart';
 
-class MonitoringScreen extends StatefulWidget {
+class MonitoringScreen extends StatelessWidget {
   const MonitoringScreen({super.key});
-
-  @override
-  State<MonitoringScreen> createState() => _MonitoringScreenState();
-}
-
-class _MonitoringScreenState extends State<MonitoringScreen>
-    with TickerProviderStateMixin {
-  String selectedFilter = '24h';
-
-  // Live metrics
-  double currentPower = 3.8; // kW
-  double batteryLevel = 87; // %
-  double load = 2.1; // kW
-  double temperature = 32; // °C
-  double solarRadiation = 800; // W/m² for weather influence
-
-  // Panel performance
-  List<Map<String, dynamic>> panels = [
-    {'name': 'Panel 1', 'array': 'East', 'efficiency': 98, 'status': 'Excellent'},
-    {'name': 'Panel 2', 'array': 'West', 'efficiency': 95, 'status': 'Excellent'},
-    {'name': 'Panel 3', 'array': 'South', 'efficiency': 82, 'status': 'Good'},
-  ];
-
-  // Animation controllers for flow bars
-  late AnimationController chartAnimationController;
-  late List<Animation<double>> chartBarAnimations;
-
-  @override
-  void initState() {
-    super.initState();
-
-    chartAnimationController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 1),
-    );
-
-    chartBarAnimations = List.generate(
-      14,
-      (index) => Tween<double>(begin: 0, end: (0.4 + 0.06 * (index % 10)))
-          .animate(
-        CurvedAnimation(
-          parent: chartAnimationController,
-          curve: Curves.easeOut,
-        ),
-      ),
-    );
-
-    chartAnimationController.repeat(reverse: true);
-
-    // Simulate live metrics
-    _simulateLiveData();
-  }
-
-  void _simulateLiveData() {
-    Timer.periodic(const Duration(seconds: 2), (timer) {
-      setState(() {
-        currentPower = (3 + (0.5 + 1.0 * (timer.tick % 5) / 5));
-        batteryLevel = (80 + (timer.tick % 15));
-        load = (2 + ((timer.tick % 3) * 0.5));
-        temperature = (30 + (timer.tick % 5));
-        solarRadiation = 700 + (timer.tick % 200); // simulate weather effect
-        panels[0]['efficiency'] = 95 + (timer.tick % 5);
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    chartAnimationController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 🚨 Alerts Banner
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                margin: const EdgeInsets.only(bottom: 15),
-                decoration: BoxDecoration(
-                  color: batteryLevel < 20 ? Colors.redAccent : Colors.green,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      batteryLevel < 20 ? Icons.warning : Icons.check_circle,
-                      color: Colors.white,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        batteryLevel < 20
-                            ? 'Battery low! Consider charging soon.'
-                            : 'All systems normal',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Header
-              const Text(
-                'Energy Monitor',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.primaryDark,
-                ),
-              ),
-              const SizedBox(height: 5),
-              const Text(
-                'Live System Status',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 25),
-
-              // Live Metrics Row
-              _buildMetricsRow(),
-
-              const SizedBox(height: 20),
-
-              // 🔋 Battery Storage + Weather Influence
-              _buildBatteryWeather(),
-
-              const SizedBox(height: 20),
-
-              // ⚡ Animated Power Flow Chart
-              _buildPowerFlowChart(),
-
-              const SizedBox(height: 20),
-
-              // Panel Performance Cards
-              _buildPanelPerformance(),
-
-              const SizedBox(height: 80),
-            ],
+      backgroundColor: const Color(0xFFF8F6F1),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFF8F6F1),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Track Your Impact',
+          style: TextStyle(
+            color: Colors.black87,
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
           ),
         ),
       ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 1),
-    );
-  }
-
-  // LIVE METRICS ROW
-  Widget _buildMetricsRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        _buildMetricCard('⚡', '${currentPower.toStringAsFixed(1)} kW', 'Power'),
-        _buildMetricCard('🔋', '${batteryLevel.toInt()}%', 'Battery'),
-        _buildMetricCard('📊', '${load.toStringAsFixed(1)} kW', 'Load'),
-        _buildMetricCard('🌡️', '${temperature.toInt()}°C', 'Temp'),
-      ],
-    );
-  }
-
-  Widget _buildMetricCard(String icon, String value, String label) {
-    return Container(
-      width: 75,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.bgLight,
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(icon, style: const TextStyle(fontSize: 28)),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              color: AppColors.primaryDark,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // BATTERY STORAGE + WEATHER
-  Widget _buildBatteryWeather() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(10),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Battery & Weather',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: AppColors.primaryDark,
-            ),
-          ),
-          const SizedBox(height: 15),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Column(
-                children: [
-                  Icon(Icons.battery_full, color: AppColors.primaryYellow, size: 32),
-                  const SizedBox(height: 5),
-                  Text('${batteryLevel.toInt()}%', style: const TextStyle(fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 3),
-                  const Text('Battery Level', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                ],
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 100),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // KIT CARD
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
               ),
-              Column(
-                children: [
-                  Icon(Icons.wb_sunny, color: AppColors.successGreen, size: 32),
-                  const SizedBox(height: 5),
-                  Text('${solarRadiation.toInt()} W/m²', style: const TextStyle(fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 3),
-                  const Text('Solar Radiation', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // POWER FLOW CHART
-  Widget _buildPowerFlowChart() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      height: 200,
-      decoration: BoxDecoration(
-        color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(10),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Power Flow',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: AppColors.primaryDark,
-            ),
-          ),
-          const SizedBox(height: 15),
-          Expanded(
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: chartBarAnimations.length,
-              itemBuilder: (context, index) {
-                return AnimatedBuilder(
-                  animation: chartBarAnimations[index],
-                  builder: (context, child) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Container(
-                            width: 25,
-                            height: 160 * chartBarAnimations[index].value,
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryYellow,
-                              borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text('H${index + 1}',
-                              style: const TextStyle(
-                                  fontSize: 12, color: AppColors.textSecondary)),
-                        ],
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // PANEL PERFORMANCE
-  Widget _buildPanelPerformance() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(10),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Panel Performance',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: AppColors.primaryDark,
-            ),
-          ),
-          const SizedBox(height: 15),
-          ...panels.map((panel) {
-            Color statusColor;
-            if (panel['status'] == 'Excellent') {
-              statusColor = AppColors.successGreen;
-            } else if (panel['status'] == 'Good') {
-              statusColor = AppColors.primaryYellow;
-            } else {
-              statusColor = Colors.redAccent;
-            }
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
               child: Row(
                 children: [
                   Container(
-                    width: 8,
-                    height: 40,
+                    width: 48,
+                    height: 48,
                     decoration: BoxDecoration(
-                      color: statusColor,
-                      borderRadius: BorderRadius.circular(4),
+                      color: const Color(0xFF1A1A1A),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(
+                      Icons.wb_sunny_rounded,
+                      color: Color(0xFFFF9800),
+                      size: 24,
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 14),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Kit #SM7-4921',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.location_on_outlined,
+                              size: 13, color: Colors.grey.shade500),
+                          const SizedBox(width: 3),
+                          Text(
+                            'Nakaseke District, Uganda',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // DEPLOYMENT STATUS
+            const Text(
+              'Deployment Status',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // TIMELINE
+            _buildTimeline(),
+
+            const SizedBox(height: 28),
+
+            // VIEW BENEFICIARY BUTTON
+            SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const BeneficiaryProfileScreen(),
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF9800),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  elevation: 0,
+                ),
+                icon: const Icon(Icons.person_outline, size: 20),
+                label: const Text(
+                  'View Beneficiary Profile',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 28),
+
+            // OFFLINE TRACKING
+            const Text(
+              'Offline Tracking (Hive)',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'View kits you have funded ever without an Internet connection.',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey.shade500,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            // OFFLINE KIT ITEM
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF3E0),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.wb_sunny_outlined,
+                      color: Color(0xFFFF9800),
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(panel['name'],
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w600, fontSize: 15)),
-                        Text(panel['array'],
-                            style: const TextStyle(
-                                fontSize: 12, color: AppColors.textSecondary)),
+                        const Text(
+                          'KIT-839913',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          'Ush. 230,000 • Powers 1 Home',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
                       ],
                     ),
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text('${panel['efficiency']}%',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 18,
-                              color: AppColors.primaryDark)),
-                      Text(panel['status'],
-                          style:
-                              TextStyle(fontSize: 11, color: statusColor)),
+                      Text(
+                        '2026-05-25',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade400,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text(
+                          'OFFLINE',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.red,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ],
               ),
-            );
-          }),
-        ],
+            ),
+          ],
+        ),
       ),
+      bottomNavigationBar: const BottomNavBar(currentIndex: 1),
+    );
+  }
+
+  Widget _buildTimeline() {
+    final steps = [
+      {'label': 'Funded', 'done': true},
+      {'label': 'Processing', 'done': true},
+      {'label': 'Shipped', 'done': true},
+      {'label': 'Installed', 'done': true},
+      {'label': 'Verified', 'done': false},
+    ];
+
+    return Column(
+      children: List.generate(steps.length, (i) {
+        final done = steps[i]['done'] as bool;
+        final isLast = i == steps.length - 1;
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // LINE + DOT
+            Column(
+              children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: done ? const Color(0xFF4CAF50) : Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: done
+                          ? const Color(0xFF4CAF50)
+                          : Colors.grey.shade300,
+                      width: 2,
+                    ),
+                  ),
+                  child: done
+                      ? const Icon(Icons.check, color: Colors.white, size: 14)
+                      : null,
+                ),
+                if (!isLast)
+                  Container(
+                    width: 2,
+                    height: 32,
+                    color: done
+                        ? const Color(0xFF4CAF50)
+                        : Colors.grey.shade200,
+                  ),
+              ],
+            ),
+            const SizedBox(width: 14),
+            Padding(
+              padding: const EdgeInsets.only(top: 5),
+              child: Text(
+                steps[i]['label'] as String,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: done ? Colors.black87 : Colors.grey.shade400,
+                ),
+              ),
+            ),
+          ],
+        );
+      }),
     );
   }
 }

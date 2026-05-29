@@ -1,224 +1,164 @@
-import 'package:flutter/material.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
-import 'dart:developer' as developer;
-
-import '../utils/app_colors.dart';
+﻿import 'package:flutter/material.dart';
 import '../widgets/bottom_nav_bar.dart';
+import 'dart:math' as math;
 
 class AnalyticsScreen extends StatelessWidget {
   const AnalyticsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Sample data
-    final List<EnergyData> monthlyData = [
-      EnergyData('Dec', 0.65),
-      EnergyData('Jan', 0.78),
-      EnergyData('Feb', 0.92),
-    ];
-
-    final List<EnergyData> efficiencyData = [
-      EnergyData('Dec', 0.92),
-      EnergyData('Jan', 0.94),
-      EnergyData('Feb', 0.942),
-    ];
-
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F6F1),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
+              // TITLE
               const Text(
-                'Analytics',
+                'Admin Analytics',
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: 22,
                   fontWeight: FontWeight.w900,
-                  color: AppColors.primaryDark,
+                  color: Colors.black87,
                 ),
               ),
-              const SizedBox(height: 5),
+              const SizedBox(height: 2),
+              Container(
+                width: 60,
+                height: 3,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF9800),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // GLOBAL IMPACT OVERVIEW
               const Text(
-                'Performance Insights',
-                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                'Global Impact Overview',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black87,
+                ),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 14),
 
-              // Metric Cards
-              _buildMetricCard(
-                '📊',
-                'Total Energy Generated',
-                '387 kWh',
-                '↗ +12% vs last month',
-                true,
-              ),
-              const SizedBox(height: 15),
-              _buildMetricCard(
-                '⚡',
-                'Average Daily Production',
-                '12.4 kWh',
-                '↗ +8% vs last week',
-                true,
-              ),
-              const SizedBox(height: 15),
-              _buildMetricCard(
-                '💰',
-                'Cost Savings',
-                'UGX 45,300',
-                '↗ This month',
-                true,
-              ),
-              const SizedBox(height: 15),
-              _buildMetricCard(
-                '🌍',
-                'Carbon Offset',
-                '184 kg',
-                '↗ CO₂ reduced this month',
-                true,
-              ),
-              const SizedBox(height: 15),
-              _buildMetricCard(
-                '🎯',
-                'System Efficiency',
-                '94.2%',
-                '↘ -1.2% vs optimal',
-                false,
-              ),
-              const SizedBox(height: 30),
-
-              // Monthly Energy Chart
+              // LIVE DEPLOYMENT MAP CARD
               Container(
-                padding: const EdgeInsets.all(25),
+                width: double.infinity,
+                height: 160,
                 decoration: BoxDecoration(
-                  color: AppColors.cardBg,
-                  borderRadius: BorderRadius.circular(25),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(13),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+                  borderRadius: BorderRadius.circular(16),
+                  image: const DecorationImage(
+                    image: AssetImage('assets/demo1.jpg'),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: Colors.black.withValues(alpha: 0.35),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF9800).withValues(alpha: 0.9),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.map_outlined,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Live Deployment Map',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // STATS ROW
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildStatCard(
+                      icon: Icons.inventory_2_outlined,
+                      iconColor: const Color(0xFFFF9800),
+                      value: '12,450',
+                      label: 'Total Kits',
                     ),
-                  ],
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: _buildStatCard(
+                      icon: Icons.attach_money_rounded,
+                      iconColor: const Color(0xFF4CAF50),
+                      value: '\$747k',
+                      label: 'Total Funds',
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 28),
+
+              // DONATION FLOW
+              const Text(
+                'Donation Flow',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 14),
+
+              // CHART
+              Container(
+                width: double.infinity,
+                height: 220,
+                padding: const EdgeInsets.fromLTRB(12, 16, 12, 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Monthly Comparison',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primaryDark,
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    SizedBox(
-                      height: 220,
-                      child: SfCartesianChart(
-                        primaryXAxis: CategoryAxis(
-                          labelStyle: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                          ),
-                          majorGridLines: const MajorGridLines(width: 0),
-                        ),
-                        primaryYAxis: NumericAxis(
-                          minimum: 0,
-                          maximum: 1,
-                          interval: 0.2,
-                          majorGridLines: const MajorGridLines(width: 0),
-                        ),
-                        tooltipBehavior: TooltipBehavior(enable: true),
-                        series: <CartesianSeries>[
-                          ColumnSeries<EnergyData, String>(
-                            dataSource: monthlyData,
-                            xValueMapper: (data, _) => data.month,
-                            yValueMapper: (data, _) => data.value,
-                            pointColorMapper: (data, index) {
-                              if (index == 0) return AppColors.primaryYellow;
-                              if (index == 1) return AppColors.secondaryOrange;
-                              return AppColors.successGreen;
-                            },
-                            borderRadius: const BorderRadius.all(
-                              Radius.circular(10),
-                            ),
-                            dataLabelSettings: const DataLabelSettings(
-                              isVisible: true,
-                              textStyle: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                    Expanded(child: _DonationLineChart()),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: ['Jan', 'Feb', 'Mar', 'Apr', 'May']
+                          .map((m) => Text(
+                                m,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey.shade500,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ))
+                          .toList(),
                     ),
                   ],
                 ),
               ),
-
-              const SizedBox(height: 30),
-
-              // Efficiency Trend Line Chart
-              Container(
-                padding: const EdgeInsets.all(25),
-                decoration: BoxDecoration(
-                  color: AppColors.cardBg,
-                  borderRadius: BorderRadius.circular(25),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(13),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Efficiency Trend',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primaryDark,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      height: 220,
-                      child: SfCartesianChart(
-                        primaryXAxis: CategoryAxis(
-                          majorGridLines: const MajorGridLines(width: 0),
-                        ),
-                        primaryYAxis: NumericAxis(
-                          minimum: 0.8,
-                          maximum: 1,
-                          interval: 0.05,
-                          majorGridLines: const MajorGridLines(width: 0),
-                        ),
-                        tooltipBehavior: TooltipBehavior(enable: true),
-                        series: <CartesianSeries>[
-                          LineSeries<EnergyData, String>(
-                            dataSource: efficiencyData,
-                            xValueMapper: (data, _) => data.month,
-                            yValueMapper: (data, _) => data.value,
-                            color: AppColors.primaryYellow,
-                            width: 3,
-                            markerSettings: const MarkerSettings(
-                              isVisible: true,
-                              color: AppColors.successGreen,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 80),
             ],
           ),
         ),
@@ -227,88 +167,162 @@ class AnalyticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMetricCard(
-    String icon,
-    String title,
-    String value,
-    String change,
-    bool isPositive,
-  ) {
-    return GestureDetector(
-      onTap: () {
-        developer.log('$title card tapped!');
-      },
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: AppColors.cardBg,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(13),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+  Widget _buildStatCard({
+    required IconData icon,
+    required Color iconColor,
+    required String value,
+    required String label,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: iconColor, size: 24),
+          const SizedBox(height: 10),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              color: Colors.black87,
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                color: AppColors.primaryYellow,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Center(
-                child: Text(icon, style: const TextStyle(fontSize: 28)),
-              ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey.shade500,
+              fontWeight: FontWeight.w500,
             ),
-            const SizedBox(width: 15),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    value,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.primaryDark,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    change,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isPositive
-                          ? AppColors.successGreen
-                          : AppColors.warningRed,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-// Model for chart data
-class EnergyData {
-  final String month;
-  final double value;
-  EnergyData(this.month, this.value);
+class _DonationLineChart extends StatelessWidget {
+  final List<double> data = const [400, 600, 500, 800, 700, 1100, 1300];
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _LinePainter(data: data),
+      child: Container(),
+    );
+  }
+}
+
+class _LinePainter extends CustomPainter {
+  final List<double> data;
+  _LinePainter({required this.data});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final maxVal = data.reduce(math.max);
+    final minVal = data.reduce(math.min);
+    final range = maxVal - minVal;
+
+    // Y axis labels
+    final yPaint = TextPainter(textDirection: TextDirection.ltr);
+    for (int i = 0; i <= 3; i++) {
+      final val = (minVal + (range * i / 3)).round();
+      yPaint.text = TextSpan(
+        text: val.toString(),
+        style: TextStyle(
+          fontSize: 10,
+          color: Colors.grey.shade400,
+        ),
+      );
+      yPaint.layout();
+      final y = size.height - (i / 3) * size.height;
+      yPaint.paint(canvas, Offset(0, y - 6));
+
+      // Grid line
+      final gridPaint = Paint()
+        ..color = Colors.grey.shade100
+        ..strokeWidth = 1;
+      canvas.drawLine(
+        Offset(30, y),
+        Offset(size.width, y),
+        gridPaint,
+      );
+    }
+
+    // Line path
+    final linePaint = Paint()
+      ..color = const Color(0xFFFF9800)
+      ..strokeWidth = 2.5
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final fillPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          const Color(0xFFFF9800).withValues(alpha: 0.15),
+          const Color(0xFFFF9800).withValues(alpha: 0.0),
+        ],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+      ..style = PaintingStyle.fill;
+
+    final chartWidth = size.width - 30;
+    final path = Path();
+    final fillPath = Path();
+
+    for (int i = 0; i < data.length; i++) {
+      final x = 30 + (i / (data.length - 1)) * chartWidth;
+      final y = size.height -
+          ((data[i] - minVal) / range) * size.height * 0.85 -
+          size.height * 0.05;
+
+      if (i == 0) {
+        path.moveTo(x, y);
+        fillPath.moveTo(x, size.height);
+        fillPath.lineTo(x, y);
+      } else {
+        final prevX = 30 + ((i - 1) / (data.length - 1)) * chartWidth;
+        final prevY = size.height -
+            ((data[i - 1] - minVal) / range) * size.height * 0.85 -
+            size.height * 0.05;
+        final cpX = (prevX + x) / 2;
+        path.cubicTo(cpX, prevY, cpX, y, x, y);
+        fillPath.cubicTo(cpX, prevY, cpX, y, x, y);
+      }
+    }
+
+    fillPath.lineTo(30 + chartWidth, size.height);
+    fillPath.close();
+
+    canvas.drawPath(fillPath, fillPaint);
+    canvas.drawPath(path, linePaint);
+
+    // Dots
+    final dotPaint = Paint()
+      ..color = const Color(0xFFFF9800)
+      ..style = PaintingStyle.fill;
+    final dotBorderPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+
+    for (int i = 0; i < data.length; i++) {
+      final x = 30 + (i / (data.length - 1)) * chartWidth;
+      final y = size.height -
+          ((data[i] - minVal) / range) * size.height * 0.85 -
+          size.height * 0.05;
+      canvas.drawCircle(Offset(x, y), 5, dotBorderPaint);
+      canvas.drawCircle(Offset(x, y), 3.5, dotPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

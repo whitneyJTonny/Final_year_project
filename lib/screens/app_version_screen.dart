@@ -4,7 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../utils/app_colors.dart';
 
-
+// TODO: Replace these with your real app store IDs
 const String _androidPackageId = 'com.yourcompany.solarm7';
 const String _iosAppId = '123456789';
 

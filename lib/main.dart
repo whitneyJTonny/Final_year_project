@@ -1,10 +1,44 @@
 import 'package:flutter/material.dart';
-import 'screens/splash_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'utils/app_colors.dart';
+import 'screens/splash_screen.dart'; // ✅ FIXED: was 'downloads/splash_screen.dart'
 
-// Global theme notifier — controls light/dark mode
+// GLOBAL NOTIFIERS
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
+final ValueNotifier<bool> isGuestNotifier = ValueNotifier(false);
+final ValueNotifier<String> userNameNotifier = ValueNotifier(
+  'Whitney Josephin',
+);
+final ValueNotifier<String> userEmailNotifier = ValueNotifier(
+  'whitneyj@example.com',
+);
+final ValueNotifier<String?> userImagePathNotifier = ValueNotifier<String?>(
+  null,
+);
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    await Hive.initFlutter();
+
+    await Hive.openBox('offline_kits');
+    final profileBox = await Hive.openBox('user_profile');
+
+    userNameNotifier.value = profileBox.get(
+      'name',
+      defaultValue: 'Whitney Josephin',
+    );
+    userEmailNotifier.value = profileBox.get(
+      'email',
+      defaultValue: 'whitneyj@example.com',
+    );
+    userImagePathNotifier.value = profileBox.get('image_path');
+  } catch (e) {
+    debugPrint('Hive init error: $e');
+  }
+
   runApp(const SolarApp());
 }
 
@@ -19,41 +53,42 @@ class SolarApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Solar M7',
-
-          // Theme switching
           themeMode: mode,
 
-          // ───────── LIGHT THEME ─────────
+          // ☀️ LIGHT THEME
           theme: ThemeData(
             brightness: Brightness.light,
-            primarySwatch: Colors.orange,
-            scaffoldBackgroundColor: const Color(0xFFF8F9FA),
-            cardColor: Colors.white,
-            appBarTheme: const AppBarTheme(
-              backgroundColor: Color(0xFFF8F9FA),
-              foregroundColor: Color(0xFF111111),
-              elevation: 0,
+            primaryColor: AppColors.primaryYellow,
+            scaffoldBackgroundColor: AppColors.bgLight,
+            cardColor: AppColors.cardBg,
+            useMaterial3: true,
+            textTheme: GoogleFonts.interTextTheme().apply(
+              bodyColor: Colors.black,
+              displayColor: Colors.black,
             ),
-            useMaterial3: false,
+            inputDecorationTheme: const InputDecorationTheme(
+              hintStyle: TextStyle(color: Colors.grey),
+            ),
           ),
 
-          // ───────── DARK THEME ─────────
+          // 🌙 DARK THEME
           darkTheme: ThemeData(
             brightness: Brightness.dark,
-            primarySwatch: Colors.orange,
-            scaffoldBackgroundColor: const Color(0xFF111111),
-            cardColor: const Color(0xFF1E1E1E),
-            appBarTheme: const AppBarTheme(
-              backgroundColor: Color(0xFF111111),
-              foregroundColor: Colors.white,
-              elevation: 0,
+            primaryColor: AppColors.primaryYellow,
+            scaffoldBackgroundColor: AppColors.darkScaffoldBg,
+            cardColor: AppColors.darkCardBg,
+            useMaterial3: true,
+            textTheme: GoogleFonts.interTextTheme(
+              ThemeData.dark().textTheme,
+            ).apply(bodyColor: Colors.white, displayColor: Colors.white),
+            inputDecorationTheme: const InputDecorationTheme(
+              hintStyle: TextStyle(color: Colors.white70),
+              labelStyle: TextStyle(color: Colors.white),
             ),
-            dividerColor: Colors.white12,
-            useMaterial3: false,
+            iconTheme: const IconThemeData(color: Colors.white70),
           ),
 
-          // App entry point
-          home: const SplashScreen(),
+          home: SplashScreen(),
         );
       },
     );

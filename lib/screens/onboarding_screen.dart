@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'dart:async';
 import 'auth_selection_screen.dart';
 
@@ -16,27 +16,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<Map<String, String>> _pages = [
     {
-      "title": "Power Your Home Anywhere",
-      "description":
-          "Complete solar kit with panel, lights and control system.",
-      "image": "demo1.jpg",
+      "title": "Power Your Home\nAnywhere",
+      "description": "Complete solar kit with panel, lights and control system.",
+      "image": "assets/demo1.jpg",
     },
     {
-      "title": "Smart Energy Control",
+      "title": "Smart Energy\nControl",
       "description": "Monitor and manage your power with ease.",
-      "image": "demo2.jpg",
+      "image": "assets/demo2.jpg",
     },
     {
-      "title": "Reliable Lighting Anytime",
+      "title": "Reliable Lighting\nAnytime",
       "description": "Bright, efficient lighting powered by solar energy.",
-      "image": "demo3.jpg",
+      "image": "assets/demo3.jpg",
     },
   ];
 
   @override
   void initState() {
     super.initState();
-
     _timer = Timer.periodic(const Duration(seconds: 4), (timer) {
       if (_currentPage < _pages.length - 1) {
         _currentPage++;
@@ -58,85 +56,112 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
+  void _skip() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const AuthSelectionScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // 🔥 brand color
+      backgroundColor: Colors.black,
       body: PageView.builder(
         controller: _pageController,
         itemCount: _pages.length,
         physics: const NeverScrollableScrollPhysics(),
-        onPageChanged: (index) {
-          setState(() {
-            _currentPage = index;
-          });
-        },
+        onPageChanged: (index) => setState(() => _currentPage = index),
         itemBuilder: (context, index) {
           final page = _pages[index];
+          final isLast = index == _pages.length - 1;
 
           return Stack(
             children: [
-              // 🔥 BACKGROUND IMAGE
+              // FULL BACKGROUND IMAGE
               Positioned.fill(
                 child: Image.asset(
                   page["image"]!,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Center(
-                      child: Text(
-                        "Image not found",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    );
-                  },
+                  errorBuilder: (_, __, ___) =>
+                      Container(color: Colors.black87),
                 ),
               ),
 
-              // 🔥 DARK OVERLAY
+              // GRADIENT OVERLAY — light at top, darker at bottom
               Positioned.fill(
-                child: Container(color: Colors.black.withValues(alpha: 0.6)),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.10),
+                        Colors.black.withValues(alpha: 0.72),
+                      ],
+                      stops: const [0.3, 1.0],
+                    ),
+                  ),
+                ),
               ),
 
-              // 🔥 CONTENT
-              Padding(
-                padding: const EdgeInsets.all(30),
+              // SKIP BUTTON — top right
+              Positioned(
+                top: 56,
+                right: 24,
+                child: GestureDetector(
+                  onTap: _skip,
+                  child: const Text(
+                    'Skip',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+
+              // BOTTOM CONTENT
+              Positioned(
+                left: 28,
+                right: 28,
+                bottom: 52,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Spacer(),
-
                     Text(
                       page["title"]!,
                       style: const TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 36,
+                        fontWeight: FontWeight.w900,
                         color: Colors.white,
+                        height: 1.15,
                       ),
                     ),
-
-                    const SizedBox(height: 15),
-
+                    const SizedBox(height: 12),
                     Text(
                       page["description"]!,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.white70,
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.white.withValues(alpha: 0.80),
                         height: 1.5,
                       ),
                     ),
+                    const SizedBox(height: 28),
 
-                    const SizedBox(height: 30),
-
-                    // 🔘 INDICATORS
+                    // DOT INDICATORS
                     Row(
                       children: List.generate(_pages.length, (i) {
-                        return Container(
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
                           margin: const EdgeInsets.only(right: 6),
-                          width: _currentPage == i ? 20 : 8,
+                          width: _currentPage == i ? 22 : 8,
                           height: 8,
                           decoration: BoxDecoration(
                             color: _currentPage == i
-                                ? Colors.orange
+                                ? const Color(0xFFFF9800)
                                 : Colors.white38,
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -144,38 +169,33 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       }),
                     ),
 
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 28),
 
-                    // 🔥 BUTTON
-                    if (index == _pages.length - 1)
+                    // GET STARTED — only on last page
+                    if (isLast)
                       SizedBox(
                         width: double.infinity,
-                        height: 55,
+                        height: 56,
                         child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const AuthSelectionScreen(),
-                              ),
-                            );
-                          },
+                          onPressed: _skip,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange,
-                            foregroundColor: Colors.black,
+                            backgroundColor: const Color(0xFFFF9800),
+                            foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
+                            elevation: 0,
                           ),
                           child: const Text(
                             "GET STARTED",
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 16,
+                              letterSpacing: 1,
+                            ),
                           ),
                         ),
                       ),
-
-                    const SizedBox(height: 40),
                   ],
                 ),
               ),
